@@ -20,7 +20,8 @@ public class LineDrawer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     [SerializeField] Vector2Int imageDimention = new Vector2Int(28, 28);
     [SerializeField] public Color paintColor = Color.white;
-    [SerializeField] RenderTextureFormat format = RenderTextureFormat.ARGBFloat;
+    [SerializeField] RenderTextureFormat format = RenderTextureFormat.RFloat;
+    [SerializeField] Text outputTextView = null;
 
     [SerializeField] DrawEvent OnDraw = new DrawEvent();
 
@@ -35,6 +36,8 @@ public class LineDrawer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public bool isStoppedDrag = true;
     bool _hasPrinted = false;
+
+    Color[] _colors;
 
     void OnEnable()
     {
@@ -62,6 +65,7 @@ public class LineDrawer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         _textClassifier = GameObject.Find("Text Classifier").GetComponent<TextClassifier>();
         _textClassifier.Start();
         _hasPrinted = false;
+        //_colors = new Color[]{Color.cyan, Color.magenta, Color.blue, Color.green, Color.yellow, Color.red};
     }
 
 
@@ -80,11 +84,36 @@ public class LineDrawer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     void Update()
     {
+        //int choice = UnityEngine.Random.Range(0, 5);
+        //lineMaterial.SetColor("_Color", _colors[choice]);
+
         //_textClassifier.ReturnTexture();
+        if (Application.platform == RuntimePlatform.Android)
+        {
+
+            // Check if Back was pressed this frame
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                //string outputText = outputTextView.text;
+                int textLength = _textClassifier.sb.Length;
+                _textClassifier.sb.Remove(textLength - 1, 1);
+                if (textLength < 2)
+                {
+                    outputTextView.text = "> Draw below to start\n" + "> Tap the back button to delete last character";
+                }
+                else
+                {
+                    outputTextView.text = _textClassifier.sb.ToString();
+                }
+            }
+        }
     }
 
     public void OnDrag(PointerEventData data)
     {
+        //int choice = UnityEngine.Random.Range(0, 5);
+        //lineMaterial.SetColor("_Color", _colors[choice]);
+
         data.Use();
 
         var area = data.pointerDrag.GetComponent<RectTransform>();

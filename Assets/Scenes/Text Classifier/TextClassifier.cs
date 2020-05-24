@@ -6,7 +6,7 @@ using TensorFlowLite;
 
 public class TextClassifier : MonoBehaviour
 {
-    [SerializeField] string fileName = "mnist.tflite";
+    [SerializeField] string fileName = "converted_emnist_model.tflite";
     [SerializeField] Text outputTextView = null;
     [SerializeField] ComputeShader compute = null;
 
@@ -14,7 +14,7 @@ public class TextClassifier : MonoBehaviour
 
     public bool isProcessing = false;
     float[,] inputs = new float[28, 28];
-    float[] outputs = new float[10];
+    float[] outputs = new float[10];    // Gives error unless outputs.Length == 10
     ComputeBuffer inputBuffer;
 
     public System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -72,15 +72,17 @@ public class TextClassifier : MonoBehaviour
         compute.Dispatch(0, 28 / 4, 28 / 4, 1);
         inputBuffer.GetData(inputs);
 
-        float startTime = Time.realtimeSinceStartup;
+        //float startTime = Time.realtimeSinceStartup;
         interpreter.SetInputTensorData(0, inputs);
         interpreter.Invoke();
         interpreter.GetOutputTensorData(0, outputs);
-        float duration = Time.realtimeSinceStartup - startTime;
+        //float duration = Time.realtimeSinceStartup - startTime;
+        Debug.Log(outputs.Length);
 
         if (shouldClearText == true)
         {
             sb.Clear();
+            //outputTextView.text = "";
             shouldClearText = false;
         }
         int outputValue = 0;
@@ -91,13 +93,21 @@ public class TextClassifier : MonoBehaviour
                 outputValue = i;
             }
         }
-        Debug.Log(outputValue);
+        //Debug.Log(outputValue);
         sb.Append(outputValue.ToString());
         outputTextView.text = sb.ToString();
+        Handheld.Vibrate();
 
         isProcessing = false;
         //_hasPrinted = true;
         //StartCoroutine("ResetPrintLetter");
+    }
+
+    public void EndWord()
+    {
+        sb.Append(" ");
+        outputTextView.text = sb.ToString();
+        Handheld.Vibrate();
     }
 
     //IEnumerator ResetPrintLetter()
